@@ -1,0 +1,270 @@
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #1d1d2e;
+    color: #d1d5db;
+    margin: 0;
+    padding: 20px;
+    
+}
+
+h2, h3 {
+    color: #9ca3af;
+}
+
+form {
+    background-color: #2d2d3e;
+    border: 1px solid #9ca3af;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    color: #d1d5db;
+}
+
+.form-column {
+    flex: 1;
+    min-width: 300px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+td {
+    padding: 10px;
+    vertical-align: middle;
+    position: relative;
+}
+
+table td:first-child, table td:last-child {
+    max-width: 3px;
+    white-space: nowrap;
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    color: #9ca3af;
+}
+
+select, input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #49c5b6;
+    border-radius: 4px;
+    background-color: #1d1d2e;
+    color: #d1d5db;
+    box-sizing: border-box;
+}
+
+pre#tsharkCommand {
+    padding: 10px;
+    background-color: #2d2d3e;
+    border-radius: 5px;
+    color: #d1d5db;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.command-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #9ca3af;
+    border-radius: 8px;
+    background-color: #2d2d3e;
+    padding: 10px;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #9ca3af;
+}
+
+.copy-btn:hover {
+    color: #4b5563;
+}
+
+.copy-confirmation {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    background-color: #38a169;
+    color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.ipv4-inputs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ipv4-octet {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid #49c5b6;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.dot {
+    font-size: 18px;
+    color: #d1d5db;
+    margin: 0 5px;
+}
+
+.error-message {
+    color: #e53e3e;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.dropdown-checklist {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-checklist-content {
+    display: none;
+    position: absolute;
+    background-color: #2d2d3e;
+    min-width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-checklist-content label {
+    display: block;
+    padding: 8px 16px;
+    cursor: pointer;
+    color: #d1d5db;
+
+}
+
+.dropdown-checklist-content label:hover {
+    background-color: #49c5b6;
+    color: #fff;
+}
+
+.dropdown-checklist:hover .dropdown-checklist-content {
+    display: block;
+}
+
+.select-container {
+    display: flex;
+    align-items: center;
+}
+
+#info-icon {
+    cursor: pointer;
+    font-size: 15px;
+    color: #49c5b6;
+}
+
+.message-bubble {
+    background-color: #2d2d3e;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+    z-index: 100;
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-right: 10px;
+    display: none;
+    width: 400px;
+    transform: translateY(-50%);
+    white-space: normal;
+}
+
+#close-btn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #49c5b6;
+}
+
+/* Responsive Adjustments 
+
+/* Extra Large screens (1920px and up) 
+@media (min-width: 1920px) {
+    .form-column {
+        flex: 1 0 40%;
+    }
+}
+
+/* Large screens (1512px to 1919px) 
+@media (max-width: 1919px) and (min-width: 1512px) {
+    .form-column {
+        flex-basis: 40%;
+    }
+    form {
+        padding: 10px;
+        max-width: 65%; /* Use a percentage to allow scaling 
+    }
+    .message-bubble {
+        width: 250px;
+    }
+}
+
+/* Medium screens (tablets, 768px to 1511px) 
+@media (max-width: 1511px) and (min-width: 768px) {
+    .form-column {
+        flex: 1 0 100%;
+    }
+
+    body {
+        padding: 10px;
+    }
+
+}
+
+/* Small screens (below 768px) 
+@media (max-width: 767px) {
+    body {
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    form {
+        padding: 15px;
+    }
+
+    .form-column {
+        flex: 1 0 100%;
+    }
+
+    .dropdown-checklist-content {
+        min-width: 100%;
+    }
+
+    .message-bubble {
+        width: auto;
+        max-width: 90%;
+    }
+}
+    */

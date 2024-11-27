@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Tshark Filter Generator</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1d1d2e;
+            padding: 20px;
+            color: #d1d5db;
+        }
+
+        h2,
+        h3 {
+            color: #9ca3af;
+        }
+
+        form {
+            background-color: #2d2d3e;
+            border: 1px solid #9ca3af;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        select,
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #49c5b6;
+            border-radius: 4px;
+            background-color: #1d1d2e;
+            color: #d1d5db;
+            box-sizing: border-box;
+        }
+
+        pre#tsharkCommand {
+            padding: 10px;
+            background-color: #2d2d3e;
+            border-radius: 5px;
+            color: #d1d5db;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .command-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #9ca3af;
+            border-radius: 8px;
+            background-color: #2d2d3e;
+            padding: 10px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #9ca3af;
+        }
+
+        .copy-btn:hover {
+            color: #4b5563;
+        }
+
+        .copy-confirmation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            background-color: #38a169;
+            color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .dropdown-checklist {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-checklist-content {
+            display: none;
+            position: absolute;
+            background-color: #2d2d3e;
+            min-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-checklist-content label {
+            display: block;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: #d1d5db;
+
+        }
+
+        .dropdown-checklist-content label:hover {
+            background-color: #49c5b6;
+            color: #fff;
+        }
+
+        .dropdown-checklist:hover .dropdown-checklist-content {
+            display: block;
+        }
+
+        /* Additional styles specifically for the header */
+        header {
+            background-color: #1d1d2e;
+            color: #d1d5db;
+            padding: 5px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        nav {
+            margin: 10px 0;
+        }
+
+        nav a {
+            color: #49c5b6;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        function updateFilterCommand() {
+            let pcapFile = document.getElementById('pcap_file').value;
+            let ipFilter = document.getElementById('ip_filter').value;
+            let protocolFilter = document.getElementById('protocol_filter').value;
+            let portFilter = document.getElementById('port_filter').value;
+            let dnsFilter = document.getElementById('dns_filter').value;
+            let outputFile = document.getElementById('output_file').value;
+            let fieldFilter = document.getElementById('field_filter').value;
+
+            // Check if dns_qry_type_filter exists and is checked
+            let dnsQryTypeFilterElement = document.getElementById('dns_qry_type_filter');
+            let dnsQryTypeFilter = dnsQryTypeFilterElement ? dnsQryTypeFilterElement.checked : false;
+
+            // Collect selected fields for -T fields
+            let selectedFields = [];
+            let checkboxes = document.querySelectorAll('.dropdown-checklist-content input[type="checkbox"]:checked');
+            checkboxes.forEach((checkbox) => {
+                selectedFields.push(checkbox.value);
+            });
+
+            let filterCommand = 'tshark -nr ' + pcapFile + '.pcap';
+
+            // Build filter expression
+            let filterExpression = [];
+
+            if (ipFilter !== '') {
+                filterExpression.push('ip.addr == ' + ipFilter);
+            }
+
+            if (protocolFilter !== '') {
+                filterExpression.push(protocolFilter);
+            }
+
+            if (portFilter !== '') {
+                filterExpression.push('tcp.port == ' + portFilter + ' || udp.port == ' + portFilter);
+            }
+
+            if (dnsFilter !== '') {
+                filterExpression.push('dns.qry.name contains "' + dnsFilter + '"');
+            }
+
+            if (dnsQryTypeFilter) {
+                filterCommand += ' -Y "dns.qry.type == 1"';
+            }
+
+            if (fieldFilter !== '') {
+                filterExpression.push(fieldFilter);
+            }
+
+            if (filterExpression.length > 0) {
+                filterCommand += ' -Y "' + filterExpression.join(' && ') + '"';
+            }
+
+            // Add selected fields to the -T fields option
+            if (selectedFields.length > 0) {
+                filterCommand += ' -T fields -e ' + selectedFields.join(' -e ');
+            }
+
+            // Add output file if provided
+            if (outputFile !== '') {
+                filterCommand += ' > ' + outputFile;
+            }
+
+            // Display the generated command
+            document.getElementById('tsharkCommand').innerText = filterCommand;
+        }
+
+        // Function to copy the command to clipboard
+        function copyCommand() {
+            // Copy command logic here
+            const copyText = document.getElementById("tsharkCommand").innerText;
+            navigator.clipboard.writeText(copyText).then(() => {
+                // Show the confirmation pop-up
+                const confirmation = document.getElementById("copy-confirmation");
+                confirmation.style.display = 'block';
+                confirmation.style.opacity = '1';
+
+                // Hide the confirmation pop-up after 1 second
+                setTimeout(() => {
+                    confirmation.style.opacity = '0';
+                    setTimeout(() => {
+                        confirmation.style.display = 'none';
+                    }, 500); // Match this duration with the CSS transition duration
+                }, 1000);
+            });
+        }
+
+        window.onload = function () {
+            document.querySelectorAll('input, select').forEach((input) => {
+                input.addEventListener('input', updateFilterCommand);
+            });
+
+        };
+    </script>
+
+</head>
+<header>
+    <a href="landing.html" style="text-decoration: none;">
+        <h1>Sharkinator</h1>
+    </a>
+    <nav>
+        <a href="index.html">Capture Generator</a>
+        <a href="filter.html">Filter Generator</a>
+    </nav>
+</header>
+
+<body>
+
+    <h2>Sharkinator Filter</h2>
+    <form>
+        <label for="pcap_file">PCAP File:</label>
+        <input type="text" name="pcap_file" id="pcap_file" placeholder="Enter PCAP filename (e.g., capture.pcap)">
+
+        <label for="ip_filter">IP Filter:</label>
+        <input type="text" name="ip_filter" id="ip_filter" placeholder="Enter IP address to filter (e.g., 8.8.8.8)">
+
+        <label for="protocol_filter">Protocol Filter:</label>
+        <select name="protocol_filter" id="protocol_filter">
+            <option value="">--Select Protocol--</option>
+            <optgroup label="TCP">
+                <option value="tcp">TCP</option>
+                <option value="tcp.flags.syn == 1">TCP Synchronize</option>
+                <option value="tcp.flags.ack == 1">TCP Acknowledge</option>
+                <option value="tcp.flags.fin == 1">TCP Finish</option>
+                <option value="tcp.flags.reset == 1">TCP Reset</option>
+                <option value="tcp.flags.push == 1">TCP Push</option>
+                <option value="tcp.flags.urg == 1">TCP Urgent</option>
+            </optgroup>
+
+            <optgroup label="UDP">
+                <option value="udp">UDP</option>
+            </optgroup>
+
+            <optgroup label="ICMP">
+                <option value="icmp">ICMP</option>
+                <option value="icmp.type == 8">ICMP Echo Request</option>
+                <option value="icmp.type == 0">ICMP Echo Reply</option>
+                <option value="icmp.type == 3">ICMP Destination Unreachable</option>
+            </optgroup>
+
+            <optgroup label="ARP">
+                <option value="arp">ARP</option>
+                <option value="arp.opcode == 1">ARP Request</option>
+                <option value="arp.opcode == 2">ARP Reply</option>
+            </optgroup>
+
+            <optgroup label="DNS">
+                <option value="dns">DNS</option>
+                <option value="dns.flags.response == 0">DNS Query</option>
+                <option value="dns.flags.response == 1">DNS Response</option>
+            </optgroup>
+
+            <optgroup label="HTTP">
+                <option value="http">HTTP</option>
+                <option value="http.request">HTTP Request</option>
+                <option value="http.response">HTTP Response</option>
+                <option value="http.request.method == GET">HTTP GET Request</option>
+                <option value="http.request.method == POST">HTTP POST Request</option>
+            </optgroup>
+
+            <optgroup label="SSL">
+                <option value="ssl">SSL</option>
+                <option value="ssl.handshake">SSL Handshake</option>
+                <option value="ssl.record.content_type == 1">SSL Change Cipher Spec</option>
+                <option value="ssl.record.content_type == 22">SSL Handshake (ClientHello)</option>
+                <option value="ssl.record.content_type == 23">SSL Handshake (ServerHello)</option>
+            </optgroup>
+        </select>
+
+        <label for="port_filter">Port Filter:</label>
+        <input type="number" name="port_filter" id="port_filter" placeholder="Enter port number (e.g., 80)">
+
+        <label for="dns_filter">DNS Query Name Filter:</label>
+        <input type="text" name="dns_filter" id="dns_filter" placeholder='Enter DNS query (e.g., "example.com")'>
+
+        <label for="field_filter">Field Filter:</label>
+        <select name="field_filter" id="field_filter">
+            <option value="">--Select Field Filter--</option>
+
+            <optgroup label="Network Layer">
+                <option value="ip.src">IP Source (ip.src)</option>
+                <option value="ip.dst">IP Destination (ip.dst)</option>
+                <option value="ipv6.src">IPv6 Source (ipv6.src)</option>
+                <option value="ipv6.dst">IPv6 Destination (ipv6.dst)</option>
+                <option value="eth.src">Ethernet Source (eth.src)</option>
+                <option value="eth.dst">Ethernet Destination (eth.dst)</option>
+            </optgroup>
+
+            <optgroup label="Transport Layer">
+                <option value="tcp.srcport">TCP Source Port (tcp.srcport)</option>
+                <option value="tcp.dstport">TCP Destination Port (tcp.dstport)</option>
+                <option value="udp.srcport">UDP Source Port (udp.srcport)</option>
+                <option value="udp.dstport">UDP Destination Port (udp.dstport)</option>
+            </optgroup>
+
+            <optgroup label="Application Layer">
+                <option value="dns.qry.name">DNS Query Name (dns.qry.name)</option>
+                <option value="dns.a">DNS A Record (dns.a)</option>
+                <option value="http.request.method">HTTP Request Method (http.request.method)</option>
+                <option value="http.host">HTTP Host (http.host)</option>
+                <option value="ssl.record.content_type">SSL Record Content Type (ssl.record.content_type)</option>
+            </optgroup>
+
+            <optgroup label="Packet Metadata">
+                <option value="frame.time">Frame Time (frame.time)</option>
+                <option value="frame.len">Frame Length (frame.len)</option>
+                <option value="frame.number">Frame Number (frame.number)</option>
+            </optgroup>
+
+            <optgroup label="Flags and Status">
+                <option value="tcp.flags">TCP Flags (tcp.flags)</option>
+                <option value="tcp.analysis.retransmission">TCP Retransmission (tcp.analysis.retransmission)</option>
+                <option value="icmp.type">ICMP Type (icmp.type)</option>
+                <option value="icmp.code">ICMP Code (icmp.code)</option>
+            </optgroup>
+        </select>
+
+        <div class="dropdown-checklist">
+            <label for="field_selection">Select Fields:</label>
+            <button type="button">Choose Fields</button>
+            <div class="dropdown-checklist-content">
+                <label><input type="checkbox" value="frame.number"> Frame
+                    Number</label>
+                <label><input type="checkbox" value="frame.time"> Frame
+                    Time</label>
+                <label><input type="checkbox" value="eth.src"> Ethernet
+                    Source
+                    Address</label>
+                <label><input type="checkbox" value="eth.dst"> Ethernet
+                    Destination
+                    Address</label>
+                <label><input type="checkbox" value="ip.src"> Source IP
+                    Address</label>
+                <label><input type="checkbox" value="ip.dst"> Destination IP
+                    Address</label>
+                <label><input type="checkbox" value="ip.proto"> IP
+                    Protocol</label>
+                <label><input type="checkbox" value="tcp.srcport"> TCP Source
+                    Port</label>
+                <label><input type="checkbox" value="tcp.dstport"> TCP
+                    Destination
+                    Port</label>
+                <label><input type="checkbox" value="udp.srcport"> UDP Source
+                    Port</label>
+                <label><input type="checkbox" value="udp.dstport"> UDP
+                    Destination
+                    Port</label>
+                <label><input type="checkbox" value="http.request.method">
+                    HTTP Request
+                    Method</label>
+                <label><input type="checkbox" value="http.response.code">
+                    HTTP Response
+                    Code</label>
+                <label><input type="checkbox" value="dns.qry.name"> DNS Query
+                    Name</label>
+                <label><input type="checkbox" value="dns.resp.addr"> DNS
+                    Response
+                    Address</label>
+                <label><input type="checkbox" value="ssl.handshake.version">
+                    SSL
+                    Handshake Version</label>
+                <label><input type="checkbox" value="icmp.type"> ICMP
+                    Type</label>
+                <label><input type="checkbox" value="icmp.code"> ICMP
+                    Code</label>
+                <label><input type="checkbox" value="arp.src.proto_ipv4"> ARP
+                    Source
+                    Protocol Address</label>
+                <label><input type="checkbox" value="arp.dst.proto_ipv4"> ARP
+                    Destination
+                    Protocol Address</label>
+            </div>
+        </div>
+
+        <label for="output_file">Output File (optional):</label>
+        <input type="text" name="output_file" id="output_file" placeholder="Enter output filename (e.g., result.txt)">
+
+    </form>
+
+    <h3>Generated Tshark Filter Command:</h3>
+    <div class="command-container">
+        <pre id="tsharkCommand">tshark</pre>
+        <button class="copy-btn" onclick="copyCommand()">
+            <i class="fas fa-copy"></i>
+        </button>
+    </div>
+    <span class="copy-confirmation" id="copy-confirmation">Command copied!</span>
+
+    <!-- Include Font Awesome for the icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+</body>
+
+
+</html>
