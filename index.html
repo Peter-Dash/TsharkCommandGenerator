@@ -5,10 +5,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tshark Command Generator</title>
-
+    <link rel="stylesheet" href="styles.css">
 </head>
-<link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
 <style>
+    /* General Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* Body */
+    body {
+        background-color: #1d1d2e;
+        /* Darker background to simulate a terminal */
+        color: #d1d5db;
+        /* Light gray for readability */
+        line-height: 1.6;
+    }
+
+
+    h1 {
+        font-size: 2.8rem;
+        color: #9ca3af;
+        /* Softer light gray for header */
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        /* Subtle shadow for depth */
+    }
+
+    p {
+        font-size: 1.1rem;
+        color: #d1d5db;
+        margin-bottom: 1.5rem;
+    }
+
+    .cta-button {
+        display: inline-block;
+        padding: 0.8rem 1.5rem;
+        color: #1d1d2e;
+        background-color: #9ca3af;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .cta-button:hover {
+        background-color: #4b5563;
+        /* Slightly darker on hover */
+    }
+
+    /* Sections */
+    section {
+        padding: 2rem;
+        max-width: 800px;
+        margin: auto;
+    }
+
+    #about,
+    #get-started,
+    #docs {
+        text-align: center;
+    }
+
+    .features-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .feature {
+        flex: 1;
+        min-width: 200px;
+        padding: 1rem;
+        background-color: #2d2d3e;
+        /* Darker card background for contrast */
+        margin: 1rem 0.5rem;
+        border-radius: 5px;
+        color: #d1d5db;
+        text-align: center;
+        box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5);
+        /* Subtle shadow for depth */
+    }
+
+    h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #9ca3af;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
     /* Additional styles specifically for the header */
     header {
         background-color: #1d1d2e;
@@ -33,315 +125,37 @@
         text-decoration: underline;
     }
 </style>
-
 <header>
-    <a href="landing.html" style="text-decoration: none;">
+    <a href="index.html" style="text-decoration: none;">
         <h1>Sharkinator</h1>
     </a>
     <nav>
-        <a href="index.html">Capture Generator</a>
+        <a href="capture.html">Capture Generator</a>
         <a href="filter.html">Filter Generator</a>
     </nav>
 </header>
 
 <body>
+    <section id="about">
+        <h2>About the Generator</h2>
+        <p>This tool allows network analysts to generate Tshark commands with ease, simplifying complex command syntax
+            and reducing errors. Whether you're capturing packets, filtering by protocol, or diving into specific IP
+            traffic, the Tshark Command Generator provides a user-friendly interface to make network analysis efficient
+            and accurate.</p>
+    </section>
 
-    <h2>Tshark Command Generator</h2>
-    <form>
-        <div class="form-column">
-            <table>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="position: relative;">
-                            <span id="info-icon" onclick="showInfo('interface', 'interfaceMessage')">ℹ️</span>
-                            <div id="interfaceMessage" class="message-bubble" style="display:none;">
-                                <span onclick="closeMessage('interfaceMessage')">×</span>
-                                <p id="interfaceContent"></p>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <label for="interface">Select Interface:</label>
-                        <div class="select-container">
-                            <select name="interface" id="interface" onchange="showMessage()">
-                                <option value="">--Select Interface--</option>
-                                <option value="eth0">eth0</option>
-                                <option value="wlan0">wlan0</option>
-                                <option value="lo">lo</option>
-                                <option value="en0">en0</option>
-                            </select>
-                        </div>
-                    </td>
-                    <td>
-                        <label for="capture_slicing">Capture Slicing (Packet Size):</label>
-                        <input type="text" name="capture_slicing" id="capture_slicing" oninput="validateCaptureSlicing()">
-                        <span id="capture_slicing_error_message" class="error-message" style="display: none; color: red;">
-                            Please enter a valid integer.
-                        </span>
-                        <div id="captureSlicingMessage" class="message-bubble" style="display:none; left:110%;">
-                            <span onclick="closeMessage('captureSlicingMessage')">×</span>
-                            <p id="captureSlicingContent"></p>
-                        </div>
-                    </td>
-                    <td>
-                        <span id="info-icon" onclick="showInfo('capture_slicing', 'captureSlicingMessage')">ℹ️</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="position: relative;">
-                            <span id="info-icon" onclick="showInfo('filter_type', 'filterTypeMessage')">ℹ️</span>
-                            <div id="filterTypeMessage" class="message-bubble" style="display:none;">
-                                <span onclick="closeMessage('filterTypeMessage')">×</span>
-                                <p id="filterContent"></p>
-                            </div>
-                    </td>
-                    <td>
-                        <label for="filter_type">Filter Type:</label>
-                        <select name="filter_type" id="filter_type" onchange="updateFilterInput()">
-                            <option value="">--Select Filter Type--</option>
-                            <option value="host">Host IP</option>
-                            <option value="port">Port Number</option>
-                            <option value="protocol">Protocol</option>
-                        </select>
-                    </td>
-                    <td>
-                        <label for="output_file">Output File:</label>
-                        <input type="text" name="output_file" id="output_file">
-                        <div id="outputFileMessage" class="message-bubble" style="display:none; left:110%;">
-                            <span onclick="closeMessage('outputFileMessage')">×</span>
-                            <p id="outputFileContent"></p>
-                    </td>
-                    <td>
-                        <span id="info-icon" onclick="showInfo('output_file', 'outputFileMessage')">ℹ️</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="position: relative;">
-                            <span id="info-icon" onclick="showInfo('filter_value', 'filterMessage')">ℹ️</span>
-                            <div id="filterMessage" class="message-bubble" style="display:none;">
-                                <span onclick="closeMessage('filterMessage')">×</span>
-                                <p id="filterContent"></p>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div id="filter_value_container">
-                            <!-- Default Filter Value Input -->
-                            <label for="filter_value">Filter Value:</label>
-                            <input type="text" name="filter_value" id="filter_value">
-                        </div>
-                        <div id="ipv4_address_container" style="display: none; width: 100%; margin-bottom: 20px;">
-                            <label style="margin-bottom: 10px;">Enter IPv4 Address:</label>
-                            <div class="ipv4-inputs" style="display: flex; align-items: center;">
-                                <input type="text" id="octet1" maxlength="3" size="3" oninput="autoPrintIPv4()"
-                                    class="ipv4-octet">
-                                <span class="dot">.</span>
-                                <input type="text" id="octet2" maxlength="3" size="3" oninput="autoPrintIPv4()"
-                                    class="ipv4-octet">
-                                <span class="dot">.</span>
-                                <input type="text" id="octet3" maxlength="3" size="3" oninput="autoPrintIPv4()"
-                                    class="ipv4-octet">
-                                <span class="dot">.</span>
-                                <input type="text" id="octet4" maxlength="3" size="3" oninput="autoPrintIPv4()"
-                                    class="ipv4-octet">
-                            </div>
+    <section id="get-started">
+        <h2>Get Started</h2>
+        <p>Ready to simplify your Tshark command setup? Click below to begin creating customized commands.</p>
+        <a href="capture.html" class="cta-button">Start Generating</a>
+    </section>
 
-                            <span id="ipv4_error_message" class="error-message" style="display: none;">Each octet must
-                                be between 0
-                                and 255.</span>
-                        </div>
-
-                        <div id="specfic_port_container" style="display: none;">
-                            <label for="specific_port">Specific Port Capture:</label>
-                            <input type="text" name="specific_port" id="specific_port">
-                        </div>
-                    </td>
-                    <td>
-                        <label for="output_format">Output Format:</label>
-                        <select name="output_format" id="output_format">
-                            <option value="">--Select Format--</option>
-                            <option value="pcap">PCAP</option>
-                            <option value="json">JSON</option>
-                            <option value="csv">CSV</option>
-                            <option value="xml">XML</option>
-                        </select>
-                        <div id="outputFormatMessage" class="message-bubble" style="display:none; left:110%;">
-                            <span onclick="closeMessage('outputFormatMessage')">×</span>
-                            <p id="outputFormatContent"></p>
-                    </td>
-                    <td>
-                        <span id="info-icon" onclick="showInfo('output_format', 'outputFormatMessage')">ℹ️</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="position: relative;">
-                            <span id="info-icon" onclick="showInfo('packet_count', 'packetCountMessage')">ℹ️</span>
-                            <div id="packetCountMessage" class="message-bubble" style="display:none;">
-                                <span onclick="closeMessage('packetCountMessage')">×</span>
-                                <p id="packetCountContent"></p>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <label for="packet_count">Packet Count (optional):</label>
-                        <input type="text" name="packet_count" id="packet_count" oninput="validatePacketCount()">
-                        <span id="packet_count_error_message" class="error-message" style="display: none; color: red;">
-                            Please enter a valid integer.
-                        </span>
-                    </td>
-                    <td>
-                        <label for="verbose_mode">Verbose Mode (-V):</label>
-                        <select name="verbose_mode" id="verbose_mode">
-                            <option value="">--Select Verbose Mode--</option>
-                            <option value="0">Verbose (default)</option>
-                            <option value="1">More Verbose</option>
-                        </select>
-                        <div id="verboseModeMessage" class="message-bubble" style="display:none; left:110%;">
-                            <span onclick="closeMessage('verboseModeMessage')">×</span>
-                            <p id="verboseModeContent"></p>
-                    </td>
-                    <td>
-                        <span id="info-icon" onclick="showInfo('verbose_mode', 'verboseModeMessage')">ℹ️</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="position: relative;">
-                            <span id="info-icon" onclick="showInfo('duration', 'durationMessage')">ℹ️</span>
-                            <div id="durationMessage" class="message-bubble" style="display:none;">
-                                <span onclick="closeMessage('durationMessage')">×</span>
-                                <p id="durationContent"></p>
-                            </div>
-                    </td>
-                    <td>
-                        <label for="duration">Capture Duration (in seconds, optional):</label>
-                        <input type="text" name="duration" id="duration" oninput="validateDuration()">
-                        <span id="duration_error_message" class="error-message" style="display: none; color: red;">
-                            Please enter a valid integer.
-                        </span>
-                    </td>
-                    <td>
-                        <label for="buffer_size">Buffer Size (for ring buffer in KB):</label>
-                        <input type="text" name="buffer_size" id="buffer_size" oninput="validateBufferSize()">
-                        <span id="buffer_size_error_message" class="error-message" style="display: none; color: red;">
-                            Please enter a valid integer.  
-                        </span>
-                        <div id="bufferSizeMessage" class="message-bubble" style="display:none; left:110%;">
-                            <span onclick="closeMessage('bufferSizeMessage')">×</span>
-                            <p id="bufferSizeContent"></p>
-                    </td>
-                    <td>
-                        <span id="info-icon" onclick="showInfo('buffer_size', 'bufferSizeMessage')">ℹ️</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="position: relative;">
-                            <span id="info-icon" onclick="showInfo('field_selection', 'fieldsMessage')">ℹ️</span>
-                            <div id="fieldsMessage" class="message-bubble" style="display:none;">
-                                <span onclick="closeMessage('fieldsMessage')">×</span>
-                                <p id="fieldsContent"></p>
-                            </div>
-                    </td>
-                    <td>
-                        <div class="dropdown-checklist">
-                            <label for="field_selection">Select Fields:</label>
-                            <button type="button">Choose Fields</button>
-                            <div class="dropdown-checklist-content">
-                                <label><input type="checkbox" value="frame.number"> Frame
-                                    Number</label>
-                                <label><input type="checkbox" value="frame.time"> Frame
-                                    Time</label>
-                                <label><input type="checkbox" value="eth.src"> Ethernet
-                                    Source
-                                    Address</label>
-                                <label><input type="checkbox" value="eth.dst"> Ethernet
-                                    Destination
-                                    Address</label>
-                                <label><input type="checkbox" value="ip.src"> Source IP
-                                    Address</label>
-                                <label><input type="checkbox" value="ip.dst"> Destination IP
-                                    Address</label>
-                                <label><input type="checkbox" value="ip.proto"> IP
-                                    Protocol</label>
-                                <label><input type="checkbox" value="tcp.srcport"> TCP Source
-                                    Port</label>
-                                <label><input type="checkbox" value="tcp.dstport"> TCP
-                                    Destination
-                                    Port</label>
-                                <label><input type="checkbox" value="udp.srcport"> UDP Source
-                                    Port</label>
-                                <label><input type="checkbox" value="udp.dstport"> UDP
-                                    Destination
-                                    Port</label>
-                                <label><input type="checkbox" value="http.request.method">
-                                    HTTP Request
-                                    Method</label>
-                                <label><input type="checkbox" value="http.response.code">
-                                    HTTP Response
-                                    Code</label>
-                                <label><input type="checkbox" value="dns.qry.name"> DNS Query
-                                    Name</label>
-                                <label><input type="checkbox" value="dns.resp.addr"> DNS
-                                    Response
-                                    Address</label>
-                                <label><input type="checkbox" value="ssl.handshake.version">
-                                    SSL
-                                    Handshake Version</label>
-                                <label><input type="checkbox" value="icmp.type"> ICMP
-                                    Type</label>
-                                <label><input type="checkbox" value="icmp.code"> ICMP
-                                    Code</label>
-                                <label><input type="checkbox" value="arp.src.proto_ipv4"> ARP
-                                    Source
-                                    Protocol Address</label>
-                                <label><input type="checkbox" value="arp.dst.proto_ipv4"> ARP
-                                    Destination
-                                    Protocol Address</label>
-                            </div>
-                        </div>
-
-                    </td>
-                    <td>
-                        <label>
-                            <input type="checkbox" name="use_ring_buffer" id="use_ring_buffer">
-                            Use Ring Buffer
-                        </label>
-
-                        <label>
-                            <input type="checkbox" name="display_interfaces" id="display_interfaces">
-                            Display Interfaces (-D)
-                        </label>
-                        <div id="displayInterfacesMessage" class="message-bubble" style="display:none; left:110%;">
-                            <span onclick="closeMessage('displayInterfacesMessage')">×</span>
-                            <p id="displayInterfacesContent"></p>
-                    </td>
-                    <td>
-                        <span id="info-icon"
-                            onclick="showInfo('display_interfaces', 'displayInterfacesMessage')">ℹ️</span>
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </form>
-
-    <h3>Generated Tshark Command:</h3>
-    <div class="command-container">
-        <pre id="tsharkCommand">tshark</pre>
-        <button class="copy-btn" onclick="copyCommand()">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    <span class="copy-confirmation" id="copy-confirmation">Command copied!</span>
-
-    <!-- Include Font Awesome for the icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
+    <section id="docs">
+        <h2>Documentation</h2>
+        <p>For more information on Tshark and its command-line options, refer to the official documentation:</p>
+        <a href="https://tshark.dev" class="cta-button">Read Docs</a>
+    </section>
 
 </body>
 
 </html>
-<script src="script.js?v=<?php echo time(); ?>"></script>

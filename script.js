@@ -9,14 +9,17 @@ function updateFilterInput() {
     if (filterType === 'host') {
         defaultFilterValueContainer.style.display = 'none';
         ipv4AddressContainer.style.display = 'block';
+        specificPortContainer.style.display = 'none';
     }
     else if (filterType === 'port') {
         defaultFilterValueContainer.style.display = 'none';
         specificPortContainer.style.display = 'block';
+        ipv4AddressContainer.style.display = 'none';
     }
     else {
         defaultFilterValueContainer.style.display = 'block';
         ipv4AddressContainer.style.display = 'none';
+        specificPortContainer.style.display = 'none';
     }
 }
 
@@ -104,6 +107,22 @@ function validateCaptureSlicing() {
     }
 }    
 
+function validateSpecificPort() {
+    const specificPortInput = document.getElementById('specific_port');
+    const errorMessage = document.getElementById('specific_port_error_message');
+
+    const value = specificPortInput.value;
+
+    if (value === '' || Number.isInteger(Number(value)) && value >= 0 && value <= 65535) {
+        // Valid input (empty or integer)
+        errorMessage.style.display = 'none';
+    }
+    else {
+        // Invalid input
+        errorMessage.style.display = 'block';
+    }
+}
+
 function updateTsharkCommand() {
     let interfaceValue = document.getElementById('interface').value;
     let filterType = document.getElementById('filter_type').value;
@@ -134,7 +153,7 @@ function updateTsharkCommand() {
                 tsharkCommand += ' host ' + ip_address;
                 break;
             case 'port':
-                tsharkCommand += ' port ' + filterValue;
+                tsharkCommand +=  filterValue;
                 break;
             case 'protocol':
                 tsharkCommand += ' ' + '-f "' + filterValue + '"';
@@ -213,7 +232,14 @@ function updateTsharkCommand() {
     }
 
     // Display the generated command
-    document.getElementById('tsharkCommand').innerText = tsharkCommand;
+    // if theres error message then dont display the command
+    if(document.getElementById('ipv4_error_message').style.display === 'none' && document.getElementById('packet_count_error_message').style.display === 'none' && document.getElementById('duration_error_message').style.display === 'none' && document.getElementById('buffer_size_error_message').style.display === 'none' && document.getElementById('capture_slicing_error_message').style.display === 'none' && document.getElementById('specific_port_error_message').style.display === 'none'){
+        document.getElementById('tsharkCommand').innerText = tsharkCommand;
+    }
+    else{
+        document.getElementById('tsharkCommand').innerText = '';
+    }
+    //document.getElementById('tsharkCommand').innerText = tsharkCommand;
 }
 
 function copyCommand() {
@@ -283,7 +309,7 @@ function showInfo(inputType, messageBoxId) {
             message = "Select the fields you want to display in the output data (e.g., Source IP, Destination IP, Protocol).";
             break;
         default:
-            message = "Please select an option to see more information.";
+            message = "Input the fields based on the field selected";
     }
 
     // Update the message content and display the message box
@@ -298,6 +324,33 @@ function showInfo(inputType, messageBoxId) {
 function closeMessage(messageBoxId) {
     const messageBox = document.getElementById(messageBoxId);
     messageBox.style.display = 'none';
+}
+
+function resetForm(){
+    document.getElementById('interface').value = '';
+    document.getElementById('filter_type').value = '';
+    document.getElementById('filter_value').value = '';
+    document.getElementById('packet_count').value = '';
+    document.getElementById('duration').value = '';
+    document.getElementById('output_file').value = '';
+    document.getElementById('output_format').value = '';
+    document.getElementById('verbose_mode').value = '';
+    document.getElementById('display_interfaces').checked = false;
+    document.getElementById('capture_slicing').value = '';
+    document.getElementById('use_ring_buffer').checked = false;
+    document.getElementById('buffer_size').value = '';
+    document.getElementById('specific_port').value = '';
+    document.getElementById('tsharkCommand').innerText = 'tshark';
+    document.getElementById('ipv4_error_message').style.display = 'none';
+    document.getElementById('packet_count_error_message').style.display = 'none';
+    document.getElementById('duration_error_message').style.display = 'none';
+    document.getElementById('buffer_size_error_message').style.display = 'none';
+    document.getElementById('capture_slicing_error_message').style.display = 'none';
+    document.getElementById('specific_port_error_message').style.display = 'none';
+    document.getElementById('ipv4_address_container').style.display = 'none';
+    document.getElementById('specfic_port_container').style.display = 'none';
+    document.getElementById('filter_value_container').style.display = 'block';
+    document.getElementById('dropdown-checklist').style.display = 'none';
 }
 
 window.onload = function () {

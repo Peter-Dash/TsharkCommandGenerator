@@ -149,6 +149,11 @@
         nav a:hover {
             text-decoration: underline;
         }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
     </style>
     <script>
         function updateFilterCommand() {
@@ -173,6 +178,32 @@
 
             let filterCommand = 'tshark -nr ' + pcapFile + '.pcap';
 
+            // Validation functions
+            const isValidIP = (ip) => {
+                const ipPattern = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$/;
+                return ipPattern.test(ip);
+            };
+
+            const isValidPort = (port) => {
+                return /^\d+$/.test(port) && Number(port) >= 1 && Number(port) <= 65535;
+            };
+
+            // Clear error messages
+            document.getElementById('ip-error').textContent = '';
+            document.getElementById('port-error').textContent = '';
+
+            // Validate IP Filter
+            if (ipFilter !== '' && !isValidIP(ipFilter)) {
+                document.getElementById('ip-error').textContent = 'Invalid IP Address. Format: 0.0.0.0 to 255.255.255.255';
+                return; // Stop further processing
+            }
+
+            // Validate Port Filter
+            if (portFilter !== '' && !isValidPort(portFilter)) {
+                document.getElementById('port-error').textContent = 'Port must be a number between 1 and 65535.';
+                return; // Stop further processing
+            }
+
             // Build filter expression
             let filterExpression = [];
 
@@ -189,7 +220,7 @@
             }
 
             if (dnsFilter !== '') {
-                filterExpression.push('dns.qry.name contains "' + dnsFilter + '"');
+                filterExpression.push('dns.qry.name contains "' + dnsFilter);
             }
 
             if (dnsQryTypeFilter) {
@@ -220,20 +251,17 @@
 
         // Function to copy the command to clipboard
         function copyCommand() {
-            // Copy command logic here
             const copyText = document.getElementById("tsharkCommand").innerText;
             navigator.clipboard.writeText(copyText).then(() => {
-                // Show the confirmation pop-up
                 const confirmation = document.getElementById("copy-confirmation");
                 confirmation.style.display = 'block';
                 confirmation.style.opacity = '1';
 
-                // Hide the confirmation pop-up after 1 second
                 setTimeout(() => {
                     confirmation.style.opacity = '0';
                     setTimeout(() => {
                         confirmation.style.display = 'none';
-                    }, 500); // Match this duration with the CSS transition duration
+                    }, 500);
                 }, 1000);
             });
         }
@@ -242,17 +270,23 @@
             document.querySelectorAll('input, select').forEach((input) => {
                 input.addEventListener('input', updateFilterCommand);
             });
-
         };
+
+        function resetForm() {
+            document.querySelector('form').reset();
+            document.getElementById('tsharkCommand').innerText = 'tshark';
+            document.getElementById('ip-error').textContent = '';
+            document.getElementById('port-error').textContent = '';
+        }
     </script>
 
 </head>
 <header>
-    <a href="landing.html" style="text-decoration: none;">
+    <a href="index.html" style="text-decoration: none;">
         <h1>Sharkinator</h1>
     </a>
     <nav>
-        <a href="index.html">Capture Generator</a>
+        <a href="capture.html">Capture Generator</a>
         <a href="filter.html">Filter Generator</a>
     </nav>
 </header>
@@ -262,10 +296,11 @@
     <h2>Sharkinator Filter</h2>
     <form>
         <label for="pcap_file">PCAP File:</label>
-        <input type="text" name="pcap_file" id="pcap_file" placeholder="Enter PCAP filename (e.g., capture.pcap)">
+        <input type="text" name="pcap_file" id="pcap_file" placeholder="Enter PCAP filename (e.g., capture.pcap)" >
 
         <label for="ip_filter">IP Filter:</label>
         <input type="text" name="ip_filter" id="ip_filter" placeholder="Enter IP address to filter (e.g., 8.8.8.8)">
+        <div id="ip-error" class="error"></div>
 
         <label for="protocol_filter">Protocol Filter:</label>
         <select name="protocol_filter" id="protocol_filter">
@@ -322,6 +357,7 @@
 
         <label for="port_filter">Port Filter:</label>
         <input type="number" name="port_filter" id="port_filter" placeholder="Enter port number (e.g., 80)">
+        <div id="port-error" class="error"></div>
 
         <label for="dns_filter">DNS Query Name Filter:</label>
         <input type="text" name="dns_filter" id="dns_filter" placeholder='Enter DNS query (e.g., "example.com")'>
@@ -427,7 +463,9 @@
 
         <label for="output_file">Output File (optional):</label>
         <input type="text" name="output_file" id="output_file" placeholder="Enter output filename (e.g., result.txt)">
-
+        <center>
+            <button type="button" onclick="resetForm()">Reset Form</button>
+        </center>
     </form>
 
     <h3>Generated Tshark Filter Command:</h3>
