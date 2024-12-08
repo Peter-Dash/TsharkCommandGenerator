@@ -1,25 +1,36 @@
 let ip_address = '';
+let ipv6Address = '';
 function updateFilterInput() {
     const filterType = document.getElementById('filter_type').value;
 
     const defaultFilterValueContainer = document.getElementById('filter_value_container');
     const ipv4AddressContainer = document.getElementById('ipv4_address_container');
     const specificPortContainer = document.getElementById('specfic_port_container');
+    const ipv6AddressContainer = document.getElementById('ipv6_address_container');
 
     if (filterType === 'host') {
         defaultFilterValueContainer.style.display = 'none';
         ipv4AddressContainer.style.display = 'block';
         specificPortContainer.style.display = 'none';
+        ipv6AddressContainer.style.display = 'none';
+    }
+    else if (filterType === 'hostIPv6') {
+        defaultFilterValueContainer.style.display = 'none';
+        ipv4AddressContainer.style.display = 'none';
+        specificPortContainer.style.display = 'none';
+        ipv6AddressContainer.style.display = 'block';
     }
     else if (filterType === 'port') {
         defaultFilterValueContainer.style.display = 'none';
         specificPortContainer.style.display = 'block';
         ipv4AddressContainer.style.display = 'none';
+        ipv6AddressContainer.style.display = 'none';
     }
     else {
         defaultFilterValueContainer.style.display = 'block';
         ipv4AddressContainer.style.display = 'none';
         specificPortContainer.style.display = 'none';
+        ipv6AddressContainer.style.display = 'none';
     }
 }
 
@@ -105,7 +116,7 @@ function validateCaptureSlicing() {
         // Invalid input
         errorMessage.style.display = 'block';
     }
-}    
+}
 
 function validateSpecificPort() {
     const specificPortInput = document.getElementById('specific_port');
@@ -121,6 +132,27 @@ function validateSpecificPort() {
         // Invalid input
         errorMessage.style.display = 'block';
     }
+}
+
+function autoPrintIPv6() {
+    const hextets = [];
+    for (let i = 1; i <= 8; i++) {
+        hextets.push(document.getElementById(`hextet${i}`).value);
+    }
+
+    const isValid = hextets.every(validateHextet);
+
+    if (isValid && hextets.every((hextet) => hextet.length > 0)) {
+        ipv6Address = hextets.join(':');
+        document.getElementById('ipv6_error_message').style.display = 'none';
+    } else {
+        document.getElementById('ipv6_error_message').style.display = 'block';
+    }
+}
+
+function validateHextet(hextet) {
+    const hexRegex = /^[0-9a-fA-F]{1,4}$/;
+    return hexRegex.test(hextet);
 }
 
 function updateTsharkCommand() {
@@ -147,13 +179,16 @@ function updateTsharkCommand() {
     }
 
     // Add filter (host, port, or protocol)
-    if (filterType !== '' || ip_address !== '' || filterValue !== '') {
+    if (filterType !== '' || ip_address !== '' || filterValue !== '' || ipv6Address !== '') {
         switch (filterType) {
             case 'host':
                 tsharkCommand += ' host ' + ip_address;
                 break;
+            case 'hostIPv6':
+                tsharkCommand += ' host ' + ipv6Address;
+                break;
             case 'port':
-                tsharkCommand +=  filterValue;
+                tsharkCommand += filterValue;
                 break;
             case 'protocol':
                 tsharkCommand += ' ' + '-f "' + filterValue + '"';
@@ -216,7 +251,7 @@ function updateTsharkCommand() {
             tsharkCommand += ' filesize:' + bufferSize;
         }
     }
-    
+
     // Collect selected fields from checklist
     let selectedFields = [];
     const checkboxes = document.querySelectorAll('.dropdown-checklist-content input[type="checkbox"]');
@@ -233,10 +268,10 @@ function updateTsharkCommand() {
 
     // Display the generated command
     // if theres error message then dont display the command
-    if(document.getElementById('ipv4_error_message').style.display === 'none' && document.getElementById('packet_count_error_message').style.display === 'none' && document.getElementById('duration_error_message').style.display === 'none' && document.getElementById('buffer_size_error_message').style.display === 'none' && document.getElementById('capture_slicing_error_message').style.display === 'none' && document.getElementById('specific_port_error_message').style.display === 'none'){
+    if (document.getElementById('ipv4_error_message').style.display === 'none' && document.getElementById('packet_count_error_message').style.display === 'none' && document.getElementById('duration_error_message').style.display === 'none' && document.getElementById('buffer_size_error_message').style.display === 'none' && document.getElementById('capture_slicing_error_message').style.display === 'none' && document.getElementById('specific_port_error_message').style.display === 'none') {
         document.getElementById('tsharkCommand').innerText = tsharkCommand;
     }
-    else{
+    else {
         document.getElementById('tsharkCommand').innerText = '';
     }
     //document.getElementById('tsharkCommand').innerText = tsharkCommand;
@@ -326,7 +361,7 @@ function closeMessage(messageBoxId) {
     messageBox.style.display = 'none';
 }
 
-function resetForm(){
+function resetForm() {
     document.getElementById('interface').value = '';
     document.getElementById('filter_type').value = '';
     document.getElementById('filter_value').value = '';
@@ -347,22 +382,26 @@ function resetForm(){
     document.getElementById('buffer_size_error_message').style.display = 'none';
     document.getElementById('capture_slicing_error_message').style.display = 'none';
     document.getElementById('specific_port_error_message').style.display = 'none';
+    document.getElementById('ipv6_address_container').style.display = 'none';
     document.getElementById('ipv4_address_container').style.display = 'none';
+    document.getElementById('ipv6_error_message').style.display = 'none';
     document.getElementById('specfic_port_container').style.display = 'none';
     document.getElementById('filter_value_container').style.display = 'block';
     document.getElementById('dropdown-checklist').style.display = 'none';
+    ip_address = '';
+    ipv6Address = '';
 }
 
 window.onload = function () {
     document.querySelectorAll('input, select').forEach((input) => {
         input.addEventListener('input', updateTsharkCommand);
     });
-    
+
     // Trigger update on field selection changes
     const fieldCheckboxes = document.querySelectorAll('.dropdown-checklist-content input[type="checkbox"]');
     fieldCheckboxes.forEach((checkbox) => {
         checkbox.addEventListener('change', updateTsharkCommand);
     });
-    
+
     document.getElementById('filter_type').addEventListener('change', updateFilterInput); // Update filter type input on change
 };

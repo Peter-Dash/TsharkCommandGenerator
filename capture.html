@@ -74,8 +74,10 @@
                     </td>
                     <td>
                         <label for="capture_slicing">Capture Slicing (Packet Size):</label>
-                        <input type="text" name="capture_slicing" id="capture_slicing" oninput="validateCaptureSlicing()">
-                        <span id="capture_slicing_error_message" class="error-message" style="display: none; color: red;">
+                        <input type="text" name="capture_slicing" id="capture_slicing"
+                            oninput="validateCaptureSlicing()">
+                        <span id="capture_slicing_error_message" class="error-message"
+                            style="display: none; color: red;">
                             Please enter a valid integer.
                         </span>
                         <div id="captureSlicingMessage" class="message-bubble" style="display:none; left:110%;">
@@ -100,13 +102,14 @@
                         <label for="filter_type">Filter Type:</label>
                         <select name="filter_type" id="filter_type" onchange="updateFilterInput()">
                             <option value="">--Select Filter Type--</option>
-                            <option value="host">Host IP</option>
+                            <option value="host">Host IP IPv4</option>
+                            <option value="hostIPv6">Host IP IPv6</option>
                             <option value="port">Port Number</option>
                             <option value="protocol">Protocol</option>
                         </select>
                     </td>
                     <td>
-                        <label for="output_file">Output File:</label>
+                        <label for="output_file">Output File Name:</label>
                         <input type="text" name="output_file" id="output_file">
                         <div id="outputFileMessage" class="message-bubble" style="display:none; left:110%;">
                             <span onclick="closeMessage('outputFileMessage')">×</span>
@@ -153,10 +156,44 @@
                                 and 255.</span>
                         </div>
 
+                        <div id="ipv6_address_container" style="display: none; width: 100%; margin-bottom: 20px;">
+                            <label style="margin-bottom: 10px;">Enter IPv6 Address:</label>
+                            <div class="ipv6-inputs" style="display: flex; align-items: center;">
+                                <input type="text" id="hextet1" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                                <span class="colon">:</span>
+                                <input type="text" id="hextet2" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                                <span class="colon">:</span>
+                                <input type="text" id="hextet3" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                                <span class="colon">:</span>
+                                <input type="text" id="hextet4" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                                <span class="colon">:</span>
+                                <input type="text" id="hextet5" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                                <span class="colon">:</span>
+                                <input type="text" id="hextet6" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                                <span class="colon">:</span>
+                                <input type="text" id="hextet7" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                                <span class="colon">:</span>
+                                <input type="text" id="hextet8" maxlength="4" size="4" oninput="autoPrintIPv6()"
+                                    class="ipv6-hextet">
+                            </div>
+
+                            <span id="ipv6_error_message" class="error-message" style="display: none;">Each hextet must
+                                be a valid
+                                hexadecimal number (0-FFFF).</span>
+                        </div>
+
                         <div id="specfic_port_container" style="display: none;">
                             <label for="specific_port">Specific Port Capture:</label>
                             <input type="text" name="specific_port" id="specific_port" oninput="validateSpecificPort()">
-                            <span id="specific_port_error_message" class="error-message" style="display: none; color: red;">
+                            <span id="specific_port_error_message" class="error-message"
+                                style="display: none; color: red;">
                                 Port Number should be integer and between 1 and 65535.
                             </span>
                         </div>
@@ -230,7 +267,7 @@
                         <label for="buffer_size">Buffer Size (for ring buffer in KB):</label>
                         <input type="text" name="buffer_size" id="buffer_size" oninput="validateBufferSize()">
                         <span id="buffer_size_error_message" class="error-message" style="display: none; color: red;">
-                            Please enter a valid integer.  
+                            Please enter a valid integer.
                         </span>
                         <div id="bufferSizeMessage" class="message-bubble" style="display:none; left:110%;">
                             <span onclick="closeMessage('bufferSizeMessage')">×</span>
@@ -333,7 +370,7 @@
             </center>
         </div>
     </form>
-    
+
 
     <h3>Generated Tshark Command:</h3>
     <div class="command-container">
