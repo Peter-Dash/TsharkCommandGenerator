@@ -176,7 +176,7 @@
                 selectedFields.push(checkbox.value);
             });
 
-            let filterCommand = 'tshark -nr ' + pcapFile;
+            let filterCommand = 'tshark -nr ' + pcapFile + ' -E header=y -E separator=, -E quote=d';
 
             // Validation functions
             const isValidIP = (ip) => {
